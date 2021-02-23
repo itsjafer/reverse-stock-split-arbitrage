@@ -1,0 +1,5 @@
+# Function dependencies, for example:
+# package>=version
+alpaca-trade-api==0.52.0
+python-dotenv==0.15.0
+robin-stocks==2.0.0

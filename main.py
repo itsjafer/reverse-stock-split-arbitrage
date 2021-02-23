@@ -4,9 +4,11 @@ import string
 import os
 import alpaca_trade_api as tradeapi
 import json
+import pyotp
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime, timezone
+import robin_stocks.robinhood as r
 
 def hello_world(request):
     """Responds to any HTTP request.
@@ -63,6 +65,14 @@ def hello_world(request):
         side='buy',
         type='market',
         time_in_force='gtc'
+    )
+
+    # buy the stock on robinhood
+    totp  = pyotp.TOTP(os.getenv("MFA_TOKEN")).now()
+    login = r.login(os.getenv("RH_USERNAME"), os.getenv("RH_PASSWORD"), mfa_code=totp)
+    order = r.order_buy_fractional_by_quantity(
+        ticker,
+        qty
     )
 
     response = {
