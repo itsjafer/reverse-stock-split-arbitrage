@@ -69,6 +69,7 @@ def hello_world(request):
 
     # buy the stock on robinhood
     totp  = pyotp.TOTP(os.getenv("MFA_TOKEN")).now()
+    print("Current OTP:", totp)
     login = r.login(os.getenv("RH_USERNAME"), os.getenv("RH_PASSWORD"), mfa_code=totp)
     order = r.order_buy_fractional_by_quantity(
         ticker,
@@ -107,3 +108,13 @@ def getStockTicker(tweet):
             continue
         return word.upper(), amount
     return "", -1
+
+# For local testing
+# class Object(object):
+#     pass
+
+# if __name__ == "__main__":
+#     request = Object()
+#     request.method = "GET"
+#     request.get_json = lambda: {"tweet": "i'm buying 2 shares of $GSV"}
+#     hello_world(request)
