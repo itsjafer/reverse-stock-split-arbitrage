@@ -58,23 +58,40 @@ def hello_world(request):
         }
         return (json.dumps(response, default=str), 200, headers)
 
+    bars = alpaca.get_barset(ticker, "minute", 1)
+    price = float(bars[ticker][0].c)
+    print(price)
     # buy the stock on Alpaca
-    alpaca.submit_order(
-        symbol=ticker,
-        qty=qty,
-        side='buy',
-        type='market',
-        time_in_force='gtc'
-    )
+    try:
+        alpaca.submit_order(
+            symbol=ticker,
+            qty=qty,
+            side='buy',
+            type='limit',
+            limit_price=price*1.1,
+            extended_hours=True,
+            time_in_force='day'
+        )
+    except:
+        print("Unable to purchase on Alpaca")
 
     # buy the stock on robinhood
     totp  = pyotp.TOTP(os.getenv("MFA_TOKEN")).now()
     print("Current OTP:", totp)
     login = r.login(os.getenv("RH_USERNAME"), os.getenv("RH_PASSWORD"), mfa_code=totp)
-    order = r.order_buy_fractional_by_quantity(
-        ticker,
-        qty
-    )
+    try: 
+        order = r.order(
+            symbol=ticker,
+            quantity=qty,
+            side="buy",
+            limitPrice=price*1.1,
+            timeInForce='gfd',
+            extendedHours='true'
+        )
+    except:
+        print("Unable to purchase on Robinhood")
+        
+    print(order)
 
     response = {
         "success": "true" 
@@ -116,5 +133,5 @@ def getStockTicker(tweet):
 # if __name__ == "__main__":
 #     request = Object()
 #     request.method = "GET"
-#     request.get_json = lambda: {"tweet": "i'm buying 2 shares of $GSV"}
+#     request.get_json = lambda: {"tweet": "i'm buying 1 share of $TGC"}
 #     hello_world(request)
