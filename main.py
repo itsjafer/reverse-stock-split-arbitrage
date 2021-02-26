@@ -38,29 +38,74 @@ def hello_world(request):
     }
 
     request_json = request.get_json()
-    tweet = request_json['tweet']
+    tweet = request_json['tweet'].lower()
     print(tweet) # for logging
     env_path = Path('.') / '.env'
     load_dotenv(dotenv_path=env_path)
+
+    # Set up alpaca
     alpaca = tradeapi.REST(
         os.getenv("ACCESS_KEY_ID"),
         os.getenv("SECRET_ACCESS_KEY"),
         base_url="https://paper-api.alpaca.markets"
     )
 
+    # Set up robinhood
+    totp  = pyotp.TOTP(os.getenv("MFA_TOKEN")).now()
+    print("Current OTP:", totp)
+    login = r.login(os.getenv("RH_USERNAME"), os.getenv("RH_PASSWORD"), mfa_code=totp)
+
     # Get the tweet
     # Get the stock ticker from the tweet
     ticker, qty = getStockTicker(tweet)
     print(ticker, qty)
-    if ticker == "" or qty <= 0:
+    if ticker == "" and qty <= 0:
         response = {
             "success": "false" 
         }
+        return (json.dumps(response, default=str), 200, headers)
+    elif len(ticker) > 0 and qty <= 0:
+        # Looks like maybe a stock was mentioned, let's see if we can sell it
+        # Get quantity
+        try:
+            position = alpaca.get_position(ticker)
+            qty = int(float(position.qty))
+            if qty <= 0:
+                raise Exception()
+        except:
+            response = {
+                "success": "false" 
+            }
+            return (json.dumps(response, default=str), 200, headers)
+        print("Im about to sell", ticker, qty)
+        # Sell on Alpaca
+        alpaca.submit_order(
+            symbol=ticker,
+            qty=qty,
+            side="sell",
+            type="market",
+            time_in_force="gtc"
+        )
+
+        # Sell on robinhood
+        order = r.order_sell_market(
+            symbol=ticker,
+            quantity=1,
+            timeInForce='gtc',
+            extendedHours='true'
+        )
+
+        response = {
+            "success": "true" 
+        }
+
         return (json.dumps(response, default=str), 200, headers)
 
     bars = alpaca.get_barset(ticker, "minute", 1)
     price = float(bars[ticker][0].c)
     print(price)
+    print("Im about to buy", qty, ticker, price)
+
     # buy the stock on Alpaca
     try:
         alpaca.submit_order(
@@ -76,9 +121,6 @@ def hello_world(request):
         print("Unable to purchase on Alpaca")
 
     # buy the stock on robinhood
-    totp  = pyotp.TOTP(os.getenv("MFA_TOKEN")).now()
-    print("Current OTP:", totp)
-    login = r.login(os.getenv("RH_USERNAME"), os.getenv("RH_PASSWORD"), mfa_code=totp)
     try: 
         order = r.order(
             symbol=ticker,
@@ -114,7 +156,7 @@ def getStockTicker(tweet):
         amount = amount[1] # the part right after "im buying"
         amount = int(amount.split(" ")[0])
     except:
-        return "", -1
+        amount = -1
 
     for word in tweet.split(" "):
         if '$' not in word:
@@ -124,7 +166,8 @@ def getStockTicker(tweet):
         if word.upper() not in allTickers:
             continue
         return word.upper(), amount
-    return "", -1
+
+    return "", amount
 
 # For local testing
 # class Object(object):
@@ -133,5 +176,5 @@ def getStockTicker(tweet):
 # if __name__ == "__main__":
 #     request = Object()
 #     request.method = "GET"
-#     request.get_json = lambda: {"tweet": "i'm buying 1 share of $TGC"}
+#     request.get_json = lambda: {"tweet": "Sold $SXTC today!"}
 #     hello_world(request)
