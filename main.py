@@ -90,7 +90,7 @@ def hello_world(request):
         # Sell on robinhood
         order = r.order_sell_market(
             symbol=ticker,
-            quantity=1,
+            quantity=qty,
             timeInForce='gtc',
             extendedHours='true'
         )
