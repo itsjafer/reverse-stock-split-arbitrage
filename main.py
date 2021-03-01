@@ -336,5 +336,5 @@ class Object(object):
 # if __name__ == "__main__":
 #     request = Object()
 #     request.method = "GET"
-#     request.get_json = lambda: {"tweet": "i'm selling 1 share of $GHSI today"}
+#     request.get_json = lambda: {"tweet": "Sold $SXTC today!"}
 #     hello_world(request)
