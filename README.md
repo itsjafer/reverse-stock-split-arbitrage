@@ -2,11 +2,11 @@
 
 Reverse Stock Split Arbitrage is a method by which an investor purchases fractional shares of a company that is expected to offer a reverse stock split in the hopes of receiving "rounded up" shares. 
 
-
-
 For example, if $ABC announces a 10-for-1 reverse stock split, purchasing 1 share before the split will result in brokers (such as Robinhood, Alpaca, and WeBull) rounding up your single share to 10 in order to perform the reverse stock split resulting in an effective gain of 9 shares.
 
 For more information, check out the [reverse split arbitrage](https://www.reversesplitarbitrage.com/) website, which is run by [@reverseSplitArb](https://twitter.com/reverseSplitArb)
+
+This repo is a GCP Cloud Functions script that automatically buys and sells stocks that are going to reverse stock split soon (based on information provided by @reverseSplitArb)
 
 ## How it works
 
