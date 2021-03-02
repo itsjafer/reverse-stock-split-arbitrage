@@ -1,4 +1,4 @@
-# Reverse Split Automation
+# Reverse Stock Split Arbitrage
 
 Reverse Stock Split Arbitrage is a method by which an investor purchases fractional shares of a company that is expected to offer a reverse stock split in the hopes of receiving "rounded up" shares. 
 
@@ -31,7 +31,6 @@ Currently, I'm looking at incorporating the following brokerages:
 * **Tradier** - It's unclear whether they charge any fees on reverse stock splits
 * **Ally Invest**
 * **TradeStation** -- Their API documentation seems to have a lot of red tape
-* **Interactive Brokers** -- Uncomfirmed whether they round up
 * **Tastyworks** -- Unofficial API seems to be focused on options trading not stocks
 
 The script requires the following environment variables set:
