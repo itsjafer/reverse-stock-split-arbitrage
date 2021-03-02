@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from webull import webull
 import robin_stocks.robinhood as r
 
-def hello_world(request):
+def parse_tweet(request):
     """Responds to any HTTP request.
     Args:
         request (flask.Request): HTTP request object.
@@ -31,13 +31,14 @@ def hello_world(request):
             'Access-Control-Allow-Headers': 'Content-Type',
             'Access-Control-Max-Age': '3600'
         }
-        print("options")
         return ('', 204, headers)
 
     # Set CORS headers for the main request
     headers = {
         'Access-Control-Allow-Origin': '*'
     }
+
+    # Default responses
     responseFail = {
         "success": "false" 
     }
@@ -45,6 +46,7 @@ def hello_world(request):
         "success": "true" 
     }
 
+    # Get the tweet from the post request
     request_json = request.get_json()
     tweet = request_json['tweet'].lower()
     print(tweet) # for logging
@@ -98,13 +100,15 @@ def hello_world(request):
     webullBuy = tradeWebull(wb, ticker, price, qty)
     if not webullBuy:
         print("Unable to buy on Webull")
-    exit()
 
     if alpacaBuy and robinhoodBuy and webullBuy:
         return (json.dumps(response, default=str), 200, headers)
 
     return (json.dumps(responseFail, default=str), 200, headers)
 
+"""
+Initialize our trading modules
+"""
 def init():
     # Set up alpaca
     alpaca = tradeapi.REST(
@@ -337,4 +341,4 @@ class Object(object):
 #     request = Object()
 #     request.method = "GET"
 #     request.get_json = lambda: {"tweet": "Sold $SXTC today!"}
-#     hello_world(request)
+#     parse_tweet(request)
