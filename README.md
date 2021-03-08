@@ -55,6 +55,7 @@ Once you've got credentials set up, you can call the script by running `python m
 * Add a Tweepy listener to this repo so that anyone can run the entire process on their local machine without having to set anything else up (like GCP/IFTTT)
 * Set up this script as a package that can be installed and used from the commandline or programmatically
 * Add more brokers 
+* Add a front end to show returns/results
 
 ### Future broker support
 
