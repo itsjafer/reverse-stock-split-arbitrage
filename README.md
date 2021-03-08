@@ -6,7 +6,7 @@ For example, if $ABC announces a 10-for-1 reverse stock split, purchasing 1 shar
 
 For more information, check out the [reverse split arbitrage](https://www.reversesplitarbitrage.com/) website, which is run by [@reverseSplitArb](https://twitter.com/reverseSplitArb)
 
-This repo is a GCP Cloud Functions script that automatically buys and sells stocks that are going to reverse stock split soon (based on information provided by @reverseSplitArb)
+This repo is a GCP Cloud Functions script that connects to several brokerage accounts and automatically buys and sells stocks that are going to reverse stock split soon (based on information provided by @reverseSplitArb) in order to generate a profit.
 
 ## How it works
 
@@ -16,36 +16,52 @@ This repo is a GCP Cloud Functions script that automatically buys and sells stoc
 4. When @reverseSplitArb tweets again to signal that the stock split happened as expected, our google cloud functions runs again and sell the shares.
 5. Profit!
 
-## Getting set up
+## Currently supported brokers
 
-### Currently supported brokers
-
-* **Robinhood**: requires setting up multifactor authentication (follow [this guide](https://github.com/jmfernandes/robin_stocks/blob/master/Robinhood.rst#with-mfa-entered-programmatically-from-time-based-one-time-password-totp))
+* **Robinhood**: requires setting up multifactor authentication
+  * Sign into your robinhood account and turn on two factor authentication. Robinhood will ask you which two factor authorization app you want to use. Select "other". Robinhood will present you with an alphanumeric code. This is your `MFA TOKEN`. Make sure to put this into Google Authenticator, Duo, or an authenticator of your choice.
 * **Alpaca**: requires secret and public access key (available on the dashboard)
 * **Webull**: requires access token, refresh token, token expiration, UUID, and trade token (follow [this guide](https://github.com/tedchou12/webull/wiki/MFA-&-Security))
+* **Webull** (second account) - WeBull allows for two accounts (one margin, one cash)
+
+
+## Getting set up
+
+First, we need to get our credentials set up. Run `python main.py --setup` and follow the prompts to save your credentials to `.env` so we're able to place orders.
+
+If you'd prefer to set the environment variables yourself, the script requires the following environment variables set:
+```
+RH_MFA_TOKEN # The robinhood MFA token found under the security section of your account
+RH_USERNAME
+RH_PASSWORD
+ALPACA_ACCESS_KEY_ID # Alpaca's access key id
+ALPACA_SECRET_ACCESS_KEY # Alpaca's secret key
+WB1_ACCESS_TOKEN # webull
+WB1_REFRESH_TOKEN # webull
+WB1_TOKEN_EXPIRATION # webull
+WB1_UUID # webull
+WB1_TRADE_TOKEN # six digit trading pass code for webull
+WB2_ACCESS_TOKEN # webull
+WB2_REFRESH_TOKEN # webull
+WB2_TOKEN_EXPIRATION # webull
+WB2_UUID # webull
+WB2_TRADE_TOKEN # six digit trading pass code for webull
+```
+
+Once you've got credentials set up, you can call the script by running `python main.py --tweet text of the message goes here`. For example, `python main.py --dryrun --tweet "I'm buying 4 shares of \$TSLA"` will trigger the script to do a dryrun attempt to buy 4 shares of TSLA on all accounts linked. Note that the dollar sign had to be escaped because bash interprets `$TSLA` as a variable.
+
+## To Do
+
+* Add a Tweepy listener to this repo so that anyone can run the entire process on their local machine without having to set anything else up (like GCP/IFTTT)
+* Set up this script as a package that can be installed and used from the commandline or programmatically
+* Add more brokers 
 
 ### Future broker support
 
-Currently, I'm looking at incorporating the following brokerages:
-* **Webull** (second account) - WeBull allows for two accounts (one margin, one cash)
-* **Tradier** - It's unclear whether they charge any fees on reverse stock splits
+Currently, I've investigated APIs for these brokerages:
 * **Ally Invest**
-* **TradeStation** -- Their API documentation seems to have a lot of red tape
-* **Tastyworks** -- Unofficial API seems to be focused on options trading not stocks
+* ~~Tradier~~ - Authentication for the API requires human intervention every 24 hours
+* ~~TradeStation~~ -- API use requires a $10k deposit so this is a no go until I'm rich
+* ~~Tastyworks~~ -- Unofficial API doesn't support equity trading
 
-The script requires the following environment variables set:
-
-```
-MFA_TOKEN # The robinhood MFA token found under the security section of your account
-RH_USERNAME
-RH_PASSWORD
-ACCESS_KEY_ID # Alpaca's access key id
-SECRET_ACCESS_KEY # Alpaca's secret key
-ACCESS_TOKEN # webull
-REFRESH_TOKEN # webull
-TOKEN_EXPIRATION # webull
-UUID # webull
-TRADE_TOKEN # six digit trading pass code for webull
-
-```
-
+I'm also planning to look into using headless chromium to place orders with brokers that don't have public APIs.
