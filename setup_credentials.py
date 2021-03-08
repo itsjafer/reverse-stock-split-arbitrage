@@ -43,6 +43,18 @@ def setup():
     # Get webull information
     setupWebull(2)    
     
+    print("=" * 10 + "Ally Account" + "=" * 10)
+    print("Follow the instruction here to get your credentials: https://alienbrett.github.io/PyAlly/installing.html#get-the-library")
+
+    ALLY_CONSUMER_KEY = input("ALLY_CONSUMER_KEY: ")
+    ALLY_CONSUMER_SECRET = input("ALLY_CONSUMER_SECRET: ")
+    ALLY_OAUTH_TOKEN = input("ALLY_OAUTH_TOKEN: ")
+    ALLY_OAUTH_SECRET = input("ALLY_OAUTH_SECRET_TOKEN: ")
+    os.environ["RSA_ALLY_CONSUMER_KEY"] = ALLY_CONSUMER_KEY or os.getenv("ALLY_CONSUMER_KEY") or ""
+    os.environ["RSA_ALLY_CONSUMER_SECRET"] = ALLY_CONSUMER_SECRET or os.getenv("ALLY_CONSUMER_SECRET") or ""
+    os.environ["RSA_ALLY_OAUTH_TOKEN"] = ALLY_OAUTH_TOKEN or os.getenv("ALLY_OAUTH_TOKEN") or ""
+    os.environ["RSA_ALLY_OAUTH_SECRET"] = ALLY_OAUTH_SECRET or os.getenv("ALLY_OAUTH_SECRET") or ""
+    
     print("=" * 5 + "Saving credentials to .env (DO NOT SHARE THIS FILE!)" + "=" * 5)
     variables = dumper.dump(prefixes=["RSA_"])
       
