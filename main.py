@@ -1,18 +1,27 @@
 import requests
 import collections
 import string
+import sys
 import os
 import alpaca_trade_api as tradeapi
 import json
 import pyotp
 import time
+import argparse
 from pathlib import Path
 from dotenv import load_dotenv
+from dump_env import dumper
 from datetime import datetime, timezone
 from webull import webull
+from ticker import getStockTicker
+from trading import tradeAlpaca, tradeRobinhood, tradeWebull
+from setup_credentials import setup
 import robin_stocks.robinhood as r
+# load environment variables
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
 
-def parse_tweet(request):
+def request_response(request):
     """Responds to any HTTP request.
     Args:
         request (flask.Request): HTTP request object.
@@ -32,7 +41,6 @@ def parse_tweet(request):
             'Access-Control-Max-Age': '3600'
         }
         return ('', 204, headers)
-
     # Set CORS headers for the main request
     headers = {
         'Access-Control-Allow-Origin': '*'
@@ -45,300 +53,162 @@ def parse_tweet(request):
     response = {
         "success": "true" 
     }
-
     # Get the tweet from the post request
     request_json = request.get_json()
     tweet = request_json['tweet'].lower()
     print(tweet) # for logging
     
-    # load environment variables
-    env_path = Path('.') / '.env'
-    load_dotenv(dotenv_path=env_path)
+    success = parse_tweet(tweet)
 
-    # Initialize alpaca, webull, and robinhood 
-    alpaca, wb = init()
+    if success:
+        return (json.dumps(response, default=str), 200, headers)
+    return (json.dumps(responseFail, default=str), 200, headers)
+
+def parse_tweet(tweet, dryrun):
+    tweet = tweet.lower()
+    # Initialize alpaca, webull, and robinhood
+    alpaca = initAlpaca()
+    robinhood = initRobinhood()
+    wb1, wb2 = initWebull()
 
     # Get the stock ticker from the tweet
     ticker, qty = getStockTicker(tweet)
-    print(ticker, qty)
 
     # If we have no ticker in the tweet, there's nothing to do
     if ticker == "":
-        return (json.dumps(responseFail, default=str), 200, headers)
+        print("No ticker found, nothing to do")
+        return False
     # if we have a ticker but no quantity, we might want to sell
     elif len(ticker) > 0 and qty <= 0:
         # Let's see if we mentioned any relevant keywords
         if ("sell" not in tweet and "sold" not in tweet and "selling" not in tweet):
-            return (json.dumps(responseFail, default=str), 200, headers)
+            return False
 
-        alpacaSold = tradeAlpaca(alpaca, ticker)
+        alpacaSold = tradeAlpaca(alpaca, ticker, dryrun=dryrun)
         if not alpacaSold:
-            print("Unable to sell on Alpaca")
-        robinhoodSold = tradeRobinhood(ticker)
+            print(f"Unable to sell {ticker} on Alpaca")
+        robinhoodSold = tradeRobinhood(r, ticker, dryrun=dryrun)
         if not robinhoodSold:
-            print("Unable to sell on robinhood")
-        webullSold = tradeWebull(wb, ticker)
-        if not webullSold:
-            print("Unable to sell on webull")
-        if alpacaSold and robinhoodSold and webullSold:
-            return (json.dumps(response, default=str), 200, headers)
+            print(f"Unable to sell {ticker} on robinhood")
+        webull1Sold = tradeWebull(wb1, ticker, dryrun=dryrun)
+        if not webull1Sold:
+            print(f"Unable to sell {ticker} on webull account #1")
+        webull2Sold = tradeWebull(wb2, ticker, dryrun=dryrun)
+        if not webull2Sold:
+            print(f"Unable to sell {ticker} on webull account #2")
+        if alpacaSold and robinhoodSold and webull1Sold and webull2Sold:
+            return True
 
-        return (json.dumps(responseFail, default=str), 200, headers)
+        return False 
 
     # Otherwise, we have a ticker, and we have a quantity
     # Get a price at which we want to buy
     bars = alpaca.get_barset(ticker, "minute", 1)
     price = float(bars[ticker][0].c)
 
-    order = None
-    alpacaBuy = tradeAlpaca(alpaca, ticker, price, qty)
+    alpacaBuy = tradeAlpaca(alpaca, ticker, price, qty, dryrun=dryrun)
     if not alpacaBuy:
-        print("Unable to buy on Alpaca")
-    robinhoodBuy = tradeRobinhood(ticker, price, qty)
+        print(f"Unable to buy {ticker} on Alpaca")
+    robinhoodBuy = tradeRobinhood(r, ticker, price, qty, dryrun=dryrun)
     if not robinhoodBuy:
-        print("Unable to buy on robinhood")
-    webullBuy = tradeWebull(wb, ticker, price, qty)
-    if not webullBuy:
-        print("Unable to buy on Webull")
+        print(f"Unable to buy {ticker} on robinhood")
+    webull1Buy = tradeWebull(wb1, ticker, price, qty, dryrun=dryrun)
+    if not webull1Buy:
+        print(f"Unable to buy {ticker} on Webull account #1")
+    webull2Buy = tradeWebull(wb2, ticker, price, qty, dryrun=dryrun)
+    if not webull2Buy:
+        print(f"Unable to buy {ticker} on Webull account #2")
 
-    if alpacaBuy and robinhoodBuy and webullBuy:
-        return (json.dumps(response, default=str), 200, headers)
+    if alpacaBuy and robinhoodBuy and webull1Buy and webull2Buy:
+        return True 
 
-    return (json.dumps(responseFail, default=str), 200, headers)
+    return False 
 
 """
 Initialize our trading modules
 """
-def init():
+
+def initAlpaca():
+    ALPACA_ACCESS_KEY_ID = os.getenv("ALPACA_ACCESS_KEY_ID")
+    ALPACA_SECRET_ACCESS_KEY = os.getenv("ALPACA_SECRET_ACCESS_KEY")
+    if len(ALPACA_ACCESS_KEY_ID) <= 0 or len(ALPACA_SECRET_ACCESS_KEY) <= 0:
+        print("No Alpaca credentials supplied, skipping")
+        return None
     # Set up alpaca
     alpaca = tradeapi.REST(
-        os.getenv("ACCESS_KEY_ID"),
-        os.getenv("SECRET_ACCESS_KEY"),
+        ALPACA_ACCESS_KEY_ID,
+        ALPACA_SECRET_ACCESS_KEY,
         base_url="https://api.alpaca.markets"
     )
 
+    return alpaca
+
+def initRobinhood():
+
+    RH_MFA_TOKEN = os.getenv("RH_MFA_TOKEN")
+    RH_USERNAME = os.getenv("RH_USERNAME")
+    RH_PASSWORD = os.getenv("RH_PASSWORD")
+
+    if len(RH_MFA_TOKEN) <= 0 or len(RH_USERNAME) <= 0 or len(RH_PASSWORD) <= 0:
+        print("Missing robinhood credentials, skipping")
+        return None
+
     # Set up robinhood
-    totp  = pyotp.TOTP(os.getenv("MFA_TOKEN")).now()
-    print("Current OTP:", totp)
-    login = r.login(os.getenv("RH_USERNAME"), os.getenv("RH_PASSWORD"), mfa_code=totp)
+    totp  = pyotp.TOTP(RH_MFA_TOKEN).now()
+    login = r.login(RH_USERNAME, RH_PASSWORD, mfa_code=totp)
 
-    # set up webull
-    wb = webull()
-    wb.api_login(
-        access_token=os.environ.get("ACCESS_TOKEN"), 
-        refresh_token=os.environ.get("REFRESH_TOKEN"), 
-        token_expire=os.environ.get("TOKEN_EXPIRATION"), 
-        uuid=os.environ.get("UUID")
+    return r
+
+def initWebull():
+
+    # set up webull (first account)
+    WB1_ACCESS_TOKEN = os.environ.get("WB1_ACCESS_TOKEN")
+    WB1_REFRESH_TOKEN = os.environ.get("WB1_REFRESH_TOKEN")
+    WB1_TOKEN_EXPIRATION = os.environ.get("WB1_TOKEN_EXPIRATION")
+    WB1_UUID = os.environ.get("WB1_UUID")
+    WB1_TRADE_TOKEN = os.environ.get("WB1_TRADE_TOKEN")
+
+    if not (WB1_TRADE_TOKEN and WB1_ACCESS_TOKEN and WB1_REFRESH_TOKEN and WB1_TOKEN_EXPIRATION and WB1_UUID):
+        print("No WeBull credentials given, skipping")
+        return None, None
+    wb1 = webull()
+    wb1.api_login(
+        access_token=WB1_ACCESS_TOKEN, 
+        refresh_token=WB1_REFRESH_TOKEN, 
+        token_expire=WB1_TOKEN_EXPIRATION, 
+        uuid=WB1_UUID
     )
-    wb.get_trade_token(os.environ.get("TRADE_TOKEN"))
+    wb1.get_trade_token(WB1_TRADE_TOKEN)
 
-    return alpaca, wb
+    # set up webull (second account)
+    WB2_ACCESS_TOKEN = os.environ.get("WB2_ACCESS_TOKEN")
+    WB2_REFRESH_TOKEN = os.environ.get("WB2_REFRESH_TOKEN")
+    WB2_TOKEN_EXPIRATION = os.environ.get("WB2_TOKEN_EXPIRATION")
+    WB2_UUID = os.environ.get("WB2_UUID")
+    WB2_TRADE_TOKEN = os.environ.get("WB2_TRADE_TOKEN")
+    if not (WB2_TRADE_TOKEN and WB2_ACCESS_TOKEN and WB2_REFRESH_TOKEN and WB2_TOKEN_EXPIRATION and WB2_UUID):
+        print("Only one Webull account was given, credentials for second account were incomplete")
+        return wb1, None
+    wb2 = webull()
+    wb2.api_login(
+        access_token=WB2_ACCESS_TOKEN, 
+        refresh_token=WB2_REFRESH_TOKEN, 
+        token_expire=WB2_TOKEN_EXPIRATION, 
+        uuid=WB2_UUID
+    )
+    wb2.get_trade_token(WB2_TRADE_TOKEN)
 
+    return wb1, wb2
 
-def tradeAlpaca(alpaca, ticker, price=0, qty=0):
-    # if we're given a quantity, we're looking to buy
-    if qty > 0 and price > 0:
-    # buy the stock on Alpaca
-        try:
-            order = alpaca.submit_order(
-                symbol=ticker,
-                qty=qty,
-                side='buy',
-                type='limit',
-                limit_price=price*1.1,
-                extended_hours=True,
-                time_in_force='day'
-            )
-            print(order)
-            return True
-        except:
-            return False
+if __name__ == "__main__":
 
-    # If quantity is 0 or not given, we assume we're looking to sell
-    # Get see if we have it in our alpaca portfolio
-    try:
-        position = alpaca.get_position(ticker) # Try to get a position for this ticker
-        qty = int(float(position.qty))
-        if qty <= 0:
-            raise Exception()
-    except:
-        return False
-
-    try:
-        # Sell on Alpaca
-        alpaca.submit_order(
-            symbol=ticker,
-            qty=qty,
-            side="sell",
-            type="market",
-            time_in_force="gtc"
-        )
-    except:
-        return False
-    return True
-
-def tradeRobinhood(ticker, price=0, qty=0):
-    # If we're given a quantity, we're looking to buy
-    if qty > 0 and price > 0:
-        # buy the stock on robinhood
-        try: 
-            order = r.order(
-                symbol=ticker,
-                quantity=qty,
-                side="buy",
-                limitPrice=price*1.1,
-                timeInForce='gfd',
-                extendedHours='true'
-            )
-            print(order)
-            return True
-        except:
-            print("Unable to purchase on Robinhood")
-            return False
-
-    # Otherwise, we're looking to sell
-    holdings = r.build_holdings()
-    if ticker in holdings:
-        try:
-            qty = int(float(holdings[ticker]['quantity']))
-        except:
-            return False
-    else:
-        return False
+    parser = argparse.ArgumentParser()
     
-    if qty <= 0:
-        return False
-
-    try:
-        order = r.order_sell_market(
-            symbol=ticker,
-            quantity=qty,
-            timeInForce='gtc',
-            extendedHours='true'
-        )
-        print(order)
-    except:
-        return False
-
-    return True
-
-def tradeWebull(wb, ticker, price=0, qty=0):
-
-    # If we're given a qty, we buy
-    if qty > 0 and price > 0:
-        try:
-            # Webull requires 100 shares purchase minimum for shares under $1
-            if price < 1:
-                # Buy 100 + qty shares
-                order= wb.place_order(
-                    stock=ticker,
-                    price=price*1.1, 
-                    action='BUY', 
-                    orderType='LMT', 
-                    enforce='GTC', 
-                    quant=qty+100
-                )
-                print(order)
-
-                # Wait until we buy it
-                attempts = 10
-                while attempts > 0:
-                    positions = wb.get_positions()
-                    tickers = [position['ticker']['symbol'] for position in positions]
-                    if ticker in tickers:
-                        print("Found the ticker!")
-                        break
-                    time.sleep(1)
-                    attempts -= 1
-                    if attempts <= 1:
-                        raise Exception()
-
-                # Sell 100 shares
-                order = wb.place_order(
-                    stock=ticker,
-                    price=price*1.1, 
-                    action='BUY', 
-                    orderType='LMT', 
-                    enforce='GTC', 
-                    quant=100
-                )
-                print(order)
-                return True
-            
-            # Buy qty shares
-            order = wb.place_order(
-                stock=ticker,
-                price=price*1.1, 
-                action='BUY', 
-                orderType='LMT', 
-                enforce='GTC', 
-                quant=qty
-            )
-            print(order)
-            return True
-            
-        except:
-            return False
-
-    positions = wb.get_positions()
-    tickers = [position['ticker']['symbol'] for position in positions]
-    qty = 0
-    for position in positions:
-        if position['ticker']['symbol'] == ticker:
-            qty = int(float(position['position']))
-
-    if qty <= 0:
-        return False
-
-    try:
-        # Sell on webull
-        order = wb.place_order(
-            stock=ticker, 
-            action='SELL', 
-            orderType='MKT',
-            enforce='DAY', 
-            quant=qty
-        )
-        print(order)
-    except:
-        return False
-
-    return True
-
-def getAllTickers():
-    from urllib.request import urlopen
-
-    r = urlopen("https://www.sec.gov/include/ticker.txt")
-
-    tickers = {line.decode('UTF-8').split("\t")[0].upper() for line in r}
-    return tickers
-
-def getStockTicker(tweet):
-    allTickers = getAllTickers()
-    try: 
-        amount = tweet.split("i'm buying ")
-        amount = amount[1] # the part right after "im buying"
-        amount = int(amount.split(" ")[0])
-    except:
-        amount = -1
-
-    for word in tweet.split(" "):
-        if '$' not in word:
-            continue
-        word = word.replace("$", "")
-        word = word.translate(str.maketrans('', '', string.punctuation))
-        if word.upper() not in allTickers:
-            continue
-        return word.upper(), amount
-
-    return "", amount
-
-# For local testing
-class Object(object):
-    pass
-
-# if __name__ == "__main__":
-#     request = Object()
-#     request.method = "GET"
-#     request.get_json = lambda: {"tweet": "Sold $SXTC today!"}
-#     parse_tweet(request)
+    parser.add_argument("--setup", help="perform first time credentials setup", action="store_true")
+    parser.add_argument("tweet", nargs="?", help="the tweet we're using to decide whether to buy/sell")
+    parser.add_argument("--dryrun", help="don't actually place orders", action="store_true")
+    args = parser.parse_args()
+    if args.setup:
+        setup()
+    if args.tweet:
+        parse_tweet(args.tweet, args.dryrun)
