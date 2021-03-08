@@ -1,5 +1,7 @@
 # Reverse Stock Split Arbitrage
 
+![Past performance](performance.png)
+
 Reverse Stock Split Arbitrage is a method by which an investor purchases fractional shares of a company that is expected to offer a reverse stock split in the hopes of receiving "rounded up" shares. 
 
 For example, if $ABC announces a 10-for-1 reverse stock split, purchasing 1 share before the split will result in brokers (such as Robinhood, Alpaca, and WeBull) rounding up your single share to 10 in order to perform the reverse stock split resulting in an effective gain of 9 shares.
@@ -55,6 +57,8 @@ Once you've got credentials set up, you can call the script by running `python m
 * Add a Tweepy listener to this repo so that anyone can run the entire process on their local machine without having to set anything else up (like GCP/IFTTT)
 * Set up this script as a package that can be installed and used from the commandline or programmatically
 * Add more brokers 
+* Add a front end to show returns/results
+* Find stock splits using an API rather than a twitter account
 
 ### Future broker support
 
