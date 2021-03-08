@@ -44,12 +44,15 @@ def setup():
     setupWebull(2)    
     
     print("=" * 10 + "Ally Account" + "=" * 10)
-    print("Follow the instruction here to get your credentials: https://alienbrett.github.io/PyAlly/installing.html#get-the-library")
+    
+    ALLY_ACCOUNT_NBR = input("Ally Account Number: ")
 
+    print("Follow the instructions here to get your credentials: https://alienbrett.github.io/PyAlly/installing.html#get-the-library")
     ALLY_CONSUMER_KEY = input("ALLY_CONSUMER_KEY: ")
     ALLY_CONSUMER_SECRET = input("ALLY_CONSUMER_SECRET: ")
     ALLY_OAUTH_TOKEN = input("ALLY_OAUTH_TOKEN: ")
     ALLY_OAUTH_SECRET = input("ALLY_OAUTH_SECRET_TOKEN: ")
+    os.environ["RSA_ALLY_ACCOUNT_NBR"] = ALLY_ACCOUNT_NBR or os.getenv("ALLY_ACCOUNT_NBR") or ""
     os.environ["RSA_ALLY_CONSUMER_KEY"] = ALLY_CONSUMER_KEY or os.getenv("ALLY_CONSUMER_KEY") or ""
     os.environ["RSA_ALLY_CONSUMER_SECRET"] = ALLY_CONSUMER_SECRET or os.getenv("ALLY_CONSUMER_SECRET") or ""
     os.environ["RSA_ALLY_OAUTH_TOKEN"] = ALLY_OAUTH_TOKEN or os.getenv("ALLY_OAUTH_TOKEN") or ""
