@@ -63,11 +63,11 @@ Once you've got credentials set up, you can call the script by running `python m
 
 ### Future broker support
 
-Currently, I've investigated APIs for these brokerages:
+Currently, I've investigated APIs for these brokerages:\
+* Tradier - Unclear if this broker rounds up but the API is very nice, will keep this one in mind during the next split
 * Public - Mobile only, does not offer an API
 * Firstrade - It seems like an unofficial API might exist but they don't approve US residents with Canadian citizenship (for some reason) so I can't test this
 * Dough - Mobile only, does not offer an API
-* Tradier - Authentication for the API requires human intervention every 24 hours
 * TradeStation -- API use requires a $10k deposit so this is a no go until I'm rich
 * Schwab - No official/unofficial API, candidate for Selenium.
 * Tastyworks -- Unofficial API doesn't support equity trading
@@ -75,4 +75,3 @@ Currently, I've investigated APIs for these brokerages:
 * SoFi - No official/unofficial API.
 * Fidelity - No official/unofficial API, candidate for Selenium
 * Vanguard - No official/unofficial API, candidate for Selenium
-* 
