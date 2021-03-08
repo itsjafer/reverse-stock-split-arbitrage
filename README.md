@@ -8,7 +8,7 @@ For example, if $ABC announces a 10-for-1 reverse stock split, purchasing 1 shar
 
 For more information, check out the [reverse split arbitrage](https://www.reversesplitarbitrage.com/) website, which is run by [@reverseSplitArb](https://twitter.com/reverseSplitArb)
 
-This repo is a GCP Cloud Functions script that connects to several brokerage accounts and automatically buys and sells stocks that are going to reverse stock split soon (based on information provided by @reverseSplitArb) in order to generate a profit.
+This repo is a collection of python modules that connect to several brokerage accounts and automatically buys and sells stocks that are going to reverse stock split soon (based on information provided by @reverseSplitArb) in order to generate a profit.
 
 ## How it works
 
@@ -64,8 +64,15 @@ Once you've got credentials set up, you can call the script by running `python m
 ### Future broker support
 
 Currently, I've investigated APIs for these brokerages:
-* ~~Tradier~~ - Authentication for the API requires human intervention every 24 hours
-* ~~TradeStation~~ -- API use requires a $10k deposit so this is a no go until I'm rich
-* ~~Tastyworks~~ -- Unofficial API doesn't support equity trading
-
-I'm also planning to look into using headless chromium to place orders with brokers that don't have public APIs.
+* Public - Mobile only, does not offer an API
+* Firstrade - It seems like an unofficial API might exist but they don't approve US residents with Canadian citizenship (for some reason) so I can't test this
+* Dough - Mobile only, does not offer an API
+* Tradier - Authentication for the API requires human intervention every 24 hours
+* TradeStation -- API use requires a $10k deposit so this is a no go until I'm rich
+* Schwab - No official/unofficial API, candidate for Selenium.
+* Tastyworks -- Unofficial API doesn't support equity trading
+* All of Us - Mobile only, does not offer an API
+* SoFi - No official/unofficial API.
+* Fidelity - No official/unofficial API, candidate for Selenium
+* Vanguard - No official/unofficial API, candidate for Selenium
+* 
