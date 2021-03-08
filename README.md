@@ -25,6 +25,7 @@ This repo is a GCP Cloud Functions script that connects to several brokerage acc
 * **Alpaca**: requires secret and public access key (available on the dashboard)
 * **Webull**: requires access token, refresh token, token expiration, UUID, and trade token (follow [this guide](https://github.com/tedchou12/webull/wiki/MFA-&-Security))
 * **Webull** (second account) - WeBull allows for two accounts (one margin, one cash)
+* **Ally Invest** (Untested while I wait for my funds to clear) - Follow the instructions [here](https://alienbrett.github.io/PyAlly/installing.html#get-the-library) to get credentials.
 
 
 ## Getting set up
@@ -63,7 +64,6 @@ Once you've got credentials set up, you can call the script by running `python m
 ### Future broker support
 
 Currently, I've investigated APIs for these brokerages:
-* **Ally Invest**
 * ~~Tradier~~ - Authentication for the API requires human intervention every 24 hours
 * ~~TradeStation~~ -- API use requires a $10k deposit so this is a no go until I'm rich
 * ~~Tastyworks~~ -- Unofficial API doesn't support equity trading
