@@ -1,3 +1,4 @@
+import ally
 """
  Trading Functions 
 """
@@ -203,4 +204,63 @@ def tradeWebull(wb, ticker, price=0, qty=0, dryrun=False):
     except:
         return False
 
+    return True
+
+def tradeAlly(a, ticker, price=0, qty=0, dryrun=False):
+
+    if not a:
+        return False
+    # if we're given a quantity, we're looking to buy
+    if qty > 0 and price > 0:
+
+        if dryrun:
+            print(f"Dryrun: We would buy {qty} {ticker} on Ally for {price}")
+    # buy the stock on Ally
+        try:
+            order = ally.Order.Order(
+                buysell = 'buy',
+                symbol=ticker,
+                price=ally.Order.Limit(price*1.1),
+                time = 'day',
+                qty=qty
+            )
+            print(str(order))
+            if dryrun:
+                return True
+            a.submit(order)
+            return True
+        except:
+            return False
+
+    # If quantity is 0 or not given, we assume we're looking to sell
+    # Get see if we have it in our ally portfolio
+    try:
+        # Untested because my Ally account hasn't been cleared yet
+        qty = 0
+        positions = a.holdings(dataframe=False)
+        for position in positions:
+            if ticker == positions[position]['sym']:
+                qty = int(float(positions[position]['qty']))
+        if qty <= 0:
+            raise Exception()
+    except:
+        return False
+
+    if dryrun:
+        print(f"Dryrun: We are selling {qty} {ticker} on Ally")
+    try:
+        # Sell on Ally
+        order = ally.Order.Order(
+            buysell = 'sell',
+            symbol=ticker,
+            price=ally.Order.Market(),
+            time = 'day',
+            qty=qty
+        )
+        print(str(order))
+        if dryrun:
+            return True
+        a.submit(order)
+    except:
+        return False
     return True

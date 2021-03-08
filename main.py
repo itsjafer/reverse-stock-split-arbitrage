@@ -4,6 +4,7 @@ import string
 import sys
 import os
 import alpaca_trade_api as tradeapi
+import ally
 import json
 import pyotp
 import time
@@ -14,7 +15,7 @@ from dump_env import dumper
 from datetime import datetime, timezone
 from webull import webull
 from ticker import getStockTicker
-from trading import tradeAlpaca, tradeRobinhood, tradeWebull
+from trading import tradeAlpaca, tradeRobinhood, tradeWebull, tradeAlly
 from setup_credentials import setup
 import robin_stocks.robinhood as r
 # load environment variables
@@ -70,6 +71,7 @@ def parse_tweet(tweet, dryrun):
     alpaca = initAlpaca()
     robinhood = initRobinhood()
     wb1, wb2 = initWebull()
+    # a = initAlly()
 
     # Get the stock ticker from the tweet
     ticker, qty = getStockTicker(tweet)
@@ -96,7 +98,11 @@ def parse_tweet(tweet, dryrun):
         webull2Sold = tradeWebull(wb2, ticker, dryrun=dryrun)
         if not webull2Sold:
             print(f"Unable to sell {ticker} on webull account #2")
-        if alpacaSold and robinhoodSold and webull1Sold and webull2Sold:
+        # allySold = tradeAlly(a, ticker, dryrun=dryrun)
+        # if not allySold:
+        #     print(f"Unable to sell {ticker} on ally")
+        allySold = True
+        if alpacaSold and robinhoodSold and webull1Sold and webull2Sold and allySold:
             return True
 
         return False 
@@ -118,8 +124,12 @@ def parse_tweet(tweet, dryrun):
     webull2Buy = tradeWebull(wb2, ticker, price, qty, dryrun=dryrun)
     if not webull2Buy:
         print(f"Unable to buy {ticker} on Webull account #2")
-
-    if alpacaBuy and robinhoodBuy and webull1Buy and webull2Buy:
+    allyBuy = True
+    # allyBuy = tradeAlly(a, ticker, price, qty, dryrun=dryrun)
+    # if not allySold:
+    #     print(f"Unable to buy {ticker} on ally")
+        
+    if alpacaBuy and robinhoodBuy and webull1Buy and webull2Buy and allyBuy:
         return True 
 
     return False 
@@ -200,8 +210,22 @@ def initWebull():
 
     return wb1, wb2
 
-if __name__ == "__main__":
+def initAlly():
+    ALLY_CONSUMER_KEY = os.getenv("ALLY_CONSUMER_KEY")
+    ALLY_CONSUMER_SECRET = os.getenv("ALLY_CONSUMER_SECRET")
+    ALLY_OAUTH_TOKEN = os.getenv("ALLY_OAUTH_TOKEN")
+    ALLY_OAUTH_SECRET = os.getenv("ALLY_OAUTH_SECRET")
 
+    if not (ALLY_CONSUMER_KEY and ALLY_CONSUMER_SECRET and ALLY_OAUTH_TOKEN and ALLY_OAUTH_SECRET):
+        print("No Ally credentials given, skipping")
+        return None
+    
+    a = ally.Ally()
+
+    # Wow, that was easy!
+    return a
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument("--setup", help="perform first time credentials setup", action="store_true")
