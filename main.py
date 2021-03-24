@@ -124,7 +124,7 @@ def parse_tweet(tweet, dryrun):
     if not webull2Buy:
         print(f"Unable to buy {ticker} on Webull account #2")
     allyBuy = tradeAlly(a, ticker, price, qty, dryrun=dryrun)
-    if not allySold:
+    if not allyBuy:
         print(f"Unable to buy {ticker} on ally")
         
     if alpacaBuy and robinhoodBuy and webull1Buy and webull2Buy and allyBuy:

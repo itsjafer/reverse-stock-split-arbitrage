@@ -255,7 +255,6 @@ def tradeAlly(a, ticker, price=0, qty=0, dryrun=False):
             time = 'day',
             qty=qty
         )
-        print(str(order))
         if dryrun:
             return True
         a.submit(order)
