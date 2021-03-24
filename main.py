@@ -71,7 +71,7 @@ def parse_tweet(tweet, dryrun):
     alpaca = initAlpaca()
     robinhood = initRobinhood()
     wb1, wb2 = initWebull()
-    # a = initAlly()
+    a = initAlly()
 
     # Get the stock ticker from the tweet
     ticker, qty = getStockTicker(tweet)
