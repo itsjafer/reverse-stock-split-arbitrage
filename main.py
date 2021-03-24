@@ -221,7 +221,6 @@ def initAlly():
         return None
     
     a = ally.Ally()
-
     # Wow, that was easy!
     return a
 

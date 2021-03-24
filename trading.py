@@ -212,7 +212,6 @@ def tradeAlly(a, ticker, price=0, qty=0, dryrun=False):
         return False
     # if we're given a quantity, we're looking to buy
     if qty > 0 and price > 0:
-
         if dryrun:
             print(f"Dryrun: We would buy {qty} {ticker} on Ally for {price}")
     # buy the stock on Ally
@@ -235,12 +234,11 @@ def tradeAlly(a, ticker, price=0, qty=0, dryrun=False):
     # If quantity is 0 or not given, we assume we're looking to sell
     # Get see if we have it in our ally portfolio
     try:
-        # Untested because my Ally account hasn't been cleared yet
         qty = 0
         positions = a.holdings(dataframe=False)
         for position in positions:
-            if ticker == positions[position]['sym']:
-                qty = int(float(positions[position]['qty']))
+            if ticker == position['sym']:
+                qty = int(float(position['qty']))
         if qty <= 0:
             raise Exception()
     except:
