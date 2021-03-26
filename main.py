@@ -225,7 +225,7 @@ def initAlly():
     # Wow, that was easy!
     return a
 
-async def firstTimeLogin(page):
+async def schwabFirstTimeLogin(page):
     # At this point, we need to select the automated call option
     await page.evaluate('''() => {
         document.getElementById('PhoneId').click();

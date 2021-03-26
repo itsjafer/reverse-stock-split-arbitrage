@@ -2,13 +2,13 @@
 
 ![Past performance](performance.png)
 
-Reverse Stock Split Arbitrage is a method by which an investor purchases fractional shares of a company that is expected to offer a reverse stock split in the hopes of receiving "rounded up" shares. 
+Reverse Stock Split Arbitrage is a method by which an investor purchases 1 share of a company that is expected to offer a reverse stock split in the hopes of receiving "rounded up" shares following the stock consolidation. 
 
-For example, if $ABC announces a 10-for-1 reverse stock split, purchasing 1 share before the split will result in brokers (such as Robinhood, Alpaca, and WeBull) rounding up your single share to 10 in order to perform the reverse stock split resulting in an effective gain of 9 shares.
+For example, if $ABC announces a 10-for-1 reverse stock split, many stock split filings stipulate that anyone who may have fractional shares after the consolidation will be "rounded up". In this case, owning 1 share before the consolidation will result in ownership of 0.1 shares after the consolidation which is subsequently rounded up to 1 full share resulting in a gain of 0.9 shares.
 
 For more information, check out the [reverse split arbitrage](https://www.reversesplitarbitrage.com/) website, which is run by [@reverseSplitArb](https://twitter.com/reverseSplitArb)
 
-This repo is a collection of python modules that connect to several brokerage accounts and automatically buys and sells stocks that are going to reverse stock split soon (based on information provided by @reverseSplitArb) in order to generate a profit.
+This package automates the process of buying and selling these stocks on several brokerage accounts.
 
 ## How it works
 
@@ -25,7 +25,7 @@ This repo is a collection of python modules that connect to several brokerage ac
 * **Alpaca**: requires secret and public access key (available on the dashboard)
 * **Webull**: requires access token, refresh token, token expiration, UUID, and trade token (follow [this guide](https://github.com/tedchou12/webull/wiki/MFA-&-Security))
 * **Webull** (second account) - WeBull allows for two accounts (one margin, one cash)
-* **Ally Invest** (Untested while I wait for my funds to clear) - Follow the instructions [here](https://alienbrett.github.io/PyAlly/installing.html#get-the-library) to get credentials.
+* **Ally Invest** (Untested, but should work in practice) - Follow the instructions [here](https://alienbrett.github.io/PyAlly/installing.html#get-the-library) to get credentials.
 
 
 ## Getting set up
@@ -49,6 +49,11 @@ WB2_REFRESH_TOKEN # webull
 WB2_TOKEN_EXPIRATION # webull
 WB2_UUID # webull
 WB2_TRADE_TOKEN # six digit trading pass code for webull
+ALLY_ACCOUNT_NBR=
+ALLY_CONSUMER_KEY
+ALLY_CONSUMER_SECRET
+ALLY_OAUTH_SECRET
+ALLY_OAUTH_TOKEN
 ```
 
 Once you've got credentials set up, you can call the script by running `python main.py --tweet text of the message goes here`. For example, `python main.py --dryrun --tweet "I'm buying 4 shares of \$TSLA"` will trigger the script to do a dryrun attempt to buy 4 shares of TSLA on all accounts linked. Note that the dollar sign had to be escaped because bash interprets `$TSLA` as a variable.
@@ -63,15 +68,15 @@ Once you've got credentials set up, you can call the script by running `python m
 
 ### Future broker support
 
-Currently, I've investigated APIs for these brokerages:\
-* Tradier - Unclear if this broker rounds up but the API is very nice, will keep this one in mind during the next split
-* Public - Mobile only, does not offer an API
-* Firstrade - It seems like an unofficial API might exist but they don't approve US residents with Canadian citizenship (for some reason) so I can't test this
-* Dough - Mobile only, does not offer an API
-* TradeStation -- API use requires a $10k deposit so this is a no go until I'm rich
-* Schwab - No official/unofficial API, candidate for Selenium.
+Currently, I've investigated APIs for these brokerages:
+* Tradier - Unclear if this broker rounds up but the API is very nice, implementation in progress
+* Vanguard - No official/unofficial API, automation using puppeteer in progress
+* Schwab - No official/unofficial API, automation using puppeteer in progress
+* SoFi - No official/unofficial API, might be able to use puppeteer or reverse engineer network requests.
 * Tastyworks -- Unofficial API doesn't support equity trading
-* All of Us - Mobile only, does not offer an API
-* SoFi - No official/unofficial API.
-* Fidelity - No official/unofficial API, candidate for Selenium
-* Vanguard - No official/unofficial API, candidate for Selenium
+* ~~TradeStation~~ -- API use requires a $10k deposit so this is a no go until I'm rich
+* ~~Firstrade~~ - It seems like an unofficial API might exist but they don't approve US residents with Canadian citizenship (for some reason) so I can't test this
+* ~~Dough~~ - Mobile only, does not offer an API
+* ~~All of Us~~ - Mobile only, does not offer an API
+* ~~Public~~ - Mobile only, does not offer an API
+* ~~Fidelity~~ - No official/unofficial API, security detects and blocks puppeteer

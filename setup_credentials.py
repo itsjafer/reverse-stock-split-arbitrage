@@ -57,6 +57,20 @@ def setup():
     os.environ["RSA_ALLY_CONSUMER_SECRET"] = ALLY_CONSUMER_SECRET or os.getenv("ALLY_CONSUMER_SECRET") or ""
     os.environ["RSA_ALLY_OAUTH_TOKEN"] = ALLY_OAUTH_TOKEN or os.getenv("ALLY_OAUTH_TOKEN") or ""
     os.environ["RSA_ALLY_OAUTH_SECRET"] = ALLY_OAUTH_SECRET or os.getenv("ALLY_OAUTH_SECRET") or ""
+
+    print("=" * 10 + "Schwab Account" + "=" * 10)
+    
+    SCHWAB_USERNAME = input("Schwab Username: ")
+    SCHWAB_PASSWORD = input("Schwab Password: ")
+    os.environ["RSA_SCHWAB_USERNAME"] = SCHWAB_USERNAME or os.getenv("SCHWAB_USERNAME") or ""
+    os.environ["RSA_SCHWAB_PASSWORD"] = SCHWAB_PASSWORD or os.getenv("SCHWAB_PASSWORD") or ""
+
+     print("=" * 10 + "Vanguard Account" + "=" * 10)
+    
+    VANGUARD_USERNAME = input("Vanguard Email: ")
+    VANGUARD_PASSWORD = input("Vanguard Password: ")
+    os.environ["RSA_VANGUARD_USERNAME"] = VANGUARD_USERNAME or os.getenv("VANGUARD_USERNAME") or ""
+    os.environ["RSA_VANGUARD_PASSWORD"] = VANGUARD_PASSWORD or os.getenv("VANGUARD_PASSWORD") or ""
     
     print("=" * 5 + "Saving credentials to .env (DO NOT SHARE THIS FILE!)" + "=" * 5)
     variables = dumper.dump(prefixes=["RSA_"])

@@ -261,3 +261,40 @@ def tradeAlly(a, ticker, price=0, qty=0, dryrun=False):
     except:
         return False
     return True
+
+async def tradeSchwab(page, ticker, price=0, qty=0, dryrun=False):
+
+    if not page:
+        return False
+    # if we're given a quantity, we're looking to buy
+    if qty > 0 and price > 0:
+        if dryrun:
+            print(f"Dryrun: We would buy {qty} {ticker} on Schwab for {price}")
+    # buy the stock on Schwab
+        # Try to make a trade
+        await page.goto("https://client.schwab.com/Areas/Trade/Stocks/entry.aspx")
+
+        await page.type("#txtSym_0", ticker)
+        await page.type("#txtQty_0", str(qty))
+        await page.select('#ddlType_0', 'Market')
+        try:
+            await page.select('#ddlAction_0', 'Buy')
+            await page.evaluate('''() => {
+                document.getElementById("btnReview").click();
+            }''')
+            await page.screenshot({'path': 'trading.png'})
+            await page.waitForNavigation({ 'waitUntil': 'networkidle0' })
+            await page.screenshot({'path': 'review.png'})
+            if dryrun:
+                return True
+            await page.evaluate('''() => {
+                document.getElementById("btnConfirm").click();
+            }''')
+            await page.waitForNavigation({ 'waitUntil': 'networkidle0' })
+            await page.screenshot({'path': 'placed.png'})
+            return True
+        except:
+            return False
+
+    # Sell on Schwab
+    return True
