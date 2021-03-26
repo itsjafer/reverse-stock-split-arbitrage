@@ -2,17 +2,14 @@
 
 ![Past performance](performance.png)
 
-Reverse Stock Split Arbitrage is a method by which an investor purchases 1 share of a company that is expected to offer a reverse stock split in the hopes of receiving "rounded up" shares following the stock consolidation. 
-
-It is best explained by @reverseSplitArbitrage:
+It is best explained by [@reverseSplitArb](https://twitter.com/reverseSplitArb):
 
 > Say a company needs to increase share price, often to stay listed on an exchange. To do this, they announce that 10 shares will now be consolidated into 1 share, which has the effect of increasing the price per share about 10x. (The exact ratio may differ.) So if you had 10 shares before the split, you’d now have 1 share that’s worth ten times as much. That’s a reverse split.
-
 > But what if you only had 1 share to begin with? Now you’d have 1/10 of a share, a fraction which historically could not be traded. To get around fractional shares, companies will sometimes pay you the cash value of the fractional share. Other times, though, they will round you up to one full share. When they round up, the share you had bought for $0.50 is now worth around $5. You profit $4.50 with almost no risk. This is reverse split arbitrage.
 
 For more information, check out the [reverse split arbitrage](https://www.reversesplitarbitrage.com/) website, which is run by [@reverseSplitArb](https://twitter.com/reverseSplitArb)
 
-This package automates the process of buying and selling these stocks on as many brokerage accounts as possible.
+**This package automates the process of reverse split arbitrage on as many brokerage accounts as possible.**
 
 ## How it works
 
@@ -58,14 +55,14 @@ WB2_REFRESH_TOKEN # webull
 WB2_TOKEN_EXPIRATION # webull
 WB2_UUID # webull
 WB2_TRADE_TOKEN # six digit trading pass code for webull
-ALLY_ACCOUNT_NBR=
+ALLY_ACCOUNT_NBR
 ALLY_CONSUMER_KEY
 ALLY_CONSUMER_SECRET
 ALLY_OAUTH_SECRET
 ALLY_OAUTH_TOKEN
 ```
 
-Once you've got credentials set up, you can call the script by running `python main.py --tweet text of the message goes here`. For example, `python main.py --dryrun --tweet "I'm buying 4 shares of \$TSLA"` will trigger the script to do a dryrun attempt to buy 4 shares of TSLA on all accounts linked. Note that the dollar sign had to be escaped because bash interprets `$TSLA` as a variable.
+Once you've got credentials set up, you can call the script manually by running `python main.py --tweet text of the message goes here`. For example, `python main.py --dryrun --tweet "I'm buying 4 shares of \$TSLA"` will trigger the script to do a dryrun attempt to buy 4 shares of TSLA on all accounts linked. Note that the dollar sign had to be escaped because bash interprets `$TSLA` as a variable.
 
 ## To Do
 
