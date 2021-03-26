@@ -6,3 +6,5 @@ robin-stocks==2.0.0
 webull @ git+https://github.com/tedchou12/webull.git@8b57cd5fda321ed05564dc92bcb61c157049f527
 dump-env==1.2.0
 pyally==1.1.2
+pyppeteer==0.2.5
+pyppeteer-stealth==2.7.3

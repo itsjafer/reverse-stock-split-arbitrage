@@ -9,6 +9,7 @@ import json
 import pyotp
 import time
 import argparse
+import asyncio
 from pathlib import Path
 from dotenv import load_dotenv
 from dump_env import dumper
@@ -17,6 +18,8 @@ from webull import webull
 from ticker import getStockTicker
 from trading import tradeAlpaca, tradeRobinhood, tradeWebull, tradeAlly
 from setup_credentials import setup
+from pyppeteer import launch
+from pyppeteer_stealth import stealth
 import robin_stocks.robinhood as r
 # load environment variables
 env_path = Path('.') / '.env'
@@ -222,7 +225,69 @@ def initAlly():
     # Wow, that was easy!
     return a
 
+async def firstTimeLogin(page):
+    # At this point, we need to select the automated call option
+    await page.evaluate('''() => {
+        document.getElementById('PhoneId').click();
+        document.getElementById('Submit').click()
+    }''')
+
+    await page.screenshot({'path': 'verification.png'})
+
+    await page.waitForNavigation({ 'waitUntil': 'networkidle0' })
+
+    await page.type('#PinNumber', input(), { "delay": 100})
+
+    await page.screenshot({'path': 'type_verification.png'})
+
+    await page.evaluate('''() => {
+        document.getElementById('TrustDeviceChecked').click()
+        document.getElementById('Submit').click()
+    }''')
+
+    await page.screenshot({'path': 'logged_in_forreal.png'})
+    
+async def initSchwab():
+    # We use puppeteer because Schwab doesn't offer an actual API
+    browser = await launch(options={
+        'userDataDir': './user_data',
+        'headless': 'ls ', 
+        'args': ['--no-sandbox']
+    })
+    page = await browser.newPage()
+    await stealth(page)
+    
+    await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.16; rv:86.0) Gecko/20100101 Firefox/86.0")
+    await page.setViewport({ "width": 1920, "height": 1080 })
+    await page.goto("https://www.schwab.com/public/schwab/nn/login/login.html?lang=en")
+
+    elementHandle = await page.waitForSelector('iframe')
+    frames = page.frames
+
+    ourFrame = None
+    for frame in frames:
+        if "schwab.com/Login" in frame.url:
+            ourFrame = frame
+    await ourFrame.type('#LoginId', os.getenv("SCHWAB_USERNAME"), { "delay": 100 })
+    await ourFrame.type('#Password', os.getenv("SCHWAB_PASSWORD"), { "delay": 100 })
+
+    submit = await ourFrame.evaluate('''() => {
+        document.getElementById('LoginSubmitBtn').click()
+    }''')
+    
+    await page.waitForNavigation({ 'waitUntil': 'networkidle0' })
+
+    await page.screenshot({'path': 'logged_in.png'})
+
+    return page
+
 if __name__ == "__main__":
+    # page = asyncio.get_event_loop().run_until_complete(initSchwab())
+
+    # if "lms.schwab.com/Sua/DeviceTag?clientId=schwab-secondary" in page.url:
+    #     asyncio.get_event_loop().run_until_complete(schwabFirstTimeLogin(page))
+
+    # exit()
     parser = argparse.ArgumentParser()
     
     parser.add_argument("--setup", help="perform first time credentials setup", action="store_true")
