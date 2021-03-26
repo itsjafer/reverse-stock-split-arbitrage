@@ -27,6 +27,11 @@ This package automates the process of buying and selling these stocks on several
 * **Webull** (second account) - WeBull allows for two accounts (one margin, one cash)
 * **Ally Invest** (Untested, but should work in practice) - Follow the instructions [here](https://alienbrett.github.io/PyAlly/installing.html#get-the-library) to get credentials.
 
+### Work in progress
+* **Schwab**: using puppeteer since no public API exists
+* **Vanguard**: using puppeteer since no public API exists
+* **Tradier**: they have a nice API but no client library and its not confirmed if they round up yet
+* **TradeStation**: this might require puppeteer because of their strict API eligibility requirements but I've emailed them to try to find a way around this
 
 ## Getting set up
 
