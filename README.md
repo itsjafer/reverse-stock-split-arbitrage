@@ -5,6 +5,7 @@
 It is best explained by [@reverseSplitArb](https://twitter.com/reverseSplitArb):
 
 > Say a company needs to increase share price, often to stay listed on an exchange. To do this, they announce that 10 shares will now be consolidated into 1 share, which has the effect of increasing the price per share about 10x. (The exact ratio may differ.) So if you had 10 shares before the split, you’d now have 1 share that’s worth ten times as much. That’s a reverse split.
+
 > But what if you only had 1 share to begin with? Now you’d have 1/10 of a share, a fraction which historically could not be traded. To get around fractional shares, companies will sometimes pay you the cash value of the fractional share. Other times, though, they will round you up to one full share. When they round up, the share you had bought for $0.50 is now worth around $5. You profit $4.50 with almost no risk. This is reverse split arbitrage.
 
 For more information, check out the [reverse split arbitrage](https://www.reversesplitarbitrage.com/) website, which is run by [@reverseSplitArb](https://twitter.com/reverseSplitArb)
