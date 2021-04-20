@@ -68,7 +68,7 @@ def request_response(request):
         return (json.dumps(response, default=str), 200, headers)
     return (json.dumps(responseFail, default=str), 200, headers)
 
-def parse_tweet(tweet, dryrun):
+def parse_tweet(tweet, dryrun=False):
     tweet = tweet.lower()
     # Initialize alpaca, webull, and robinhood
     alpaca = initAlpaca()
